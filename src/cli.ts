@@ -47,6 +47,16 @@ async function scan(m: SomniaMarkets) {
   }
 }
 
+async function caps(m: SomniaMarkets) {
+  console.log("market         max lev  OI cap (base)        position cap (base)   OI/position");
+  for (const { p, sym } of await markets(m)) {
+    const rp: any = await m.client.getPerpRiskParams(p.poolAddress);
+    const oi = BigInt(rp.maxOpenInterest), pos = BigInt(rp.maxPositionSize);
+    const ratio = pos > 0n ? Number((oi * 100n) / pos) / 100 : 0;
+    console.log(`${(sym + "-PERP").padEnd(14)} ${String(Math.round(10_000 / p.initialMarginBps) + "x").padEnd(8)} ${toHuman(oi, p.baseDecimals).padEnd(20)} ${toHuman(pos, p.baseDecimals).padEnd(21)} ${ratio}`);
+  }
+}
+
 async function check(m: SomniaMarkets, sym: string, side: Side, price: string, size: string, account?: string) {
   const found = (await markets(m)).find((x) => x.sym.toUpperCase() === sym.toUpperCase());
   if (!found) throw new Error(`no perp market for ${sym}`);
@@ -99,6 +109,7 @@ async function main() {
   let code = 0;
   try {
     if (cmd === "scan") await scan(m);
+    else if (cmd === "caps") await caps(m);
     else if (cmd === "check") {
       const ai = rest.indexOf("--account");
       const account = ai >= 0 ? rest[ai + 1] : undefined;
@@ -106,7 +117,7 @@ async function main() {
       if (!sym || (side !== "long" && side !== "short") || !price || !size) throw new Error("usage: check <SYMBOL> <long|short> <price> <size> [--account 0x...]");
       code = await check(m, sym, side, price, size, account);
     } else {
-      console.log("usage:\n  perp-preflight scan\n  perp-preflight check <SYMBOL> <long|short> <price> <size> [--account 0x...]");
+      console.log("usage:\n  perp-preflight scan\n  perp-preflight caps\n  perp-preflight check <SYMBOL> <long|short> <price> <size> [--account 0x...]");
     }
   } finally {
     await (m as any).close?.();
