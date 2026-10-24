@@ -17,6 +17,7 @@ It never reads a private key and never sends a transaction.
 ```bash
 npm install
 npm run preflight -- scan
+npm run preflight -- caps     # open-interest and per-account position caps per market
 npm run preflight -- check SOL long 100.555 0.255 --account 0xYourAddress
 npm test   # pure grid / decimals / funding maths
 ```
@@ -60,7 +61,7 @@ The account in the example is a fresh, empty testnet key, so it can't place anyt
 
 ## SDK calls used
 
-`listPerpMarkets`, `getPerpState` (mark, index, funding window), `getMaxPerpOrderSize`, `getPerpVoucherEligibility`. The order maths in `src/grid.ts` is pure and unit-tested.
+`listPerpMarkets`, `getPerpState` (mark, index, funding window), `getPerpRiskParams` (caps), `getMaxPerpOrderSize`, `getPerpVoucherEligibility`. The order maths in `src/grid.ts` is pure and unit-tested.
 
 ## Feedback
 
